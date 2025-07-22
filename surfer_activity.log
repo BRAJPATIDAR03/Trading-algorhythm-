@@ -1,0 +1,7 @@
+2025-07-22 23:32:46 - INFO - [main.run_surfer] - --- Surfer Algorithm Initializing ---
+2025-07-22 23:32:46 - INFO - [tide.determine_tide_state] - Determining Tide State...
+2025-07-22 23:32:46 - INFO - [data_procurement.get_simulated_tide_data] - Fetching simulated data for Tide module...
+2025-07-22 23:32:46 - INFO - [data_procurement.get_simulated_tide_data] - Simulated data obtained: {'Interest_Rate_Vector': 'FALLING', 'Inflation_Vector': 'STABLE', 'GDP_Vector': 'ACCELERATING', 'VIX_Level': 17, 'Market_Trend': 'ABOVE', 'Market_Breadth': 'UPTREND', 'USD_Strength': 'FALLING', 'Credit_Spreads': 'NARROWING'}
+2025-07-22 23:32:46 - INFO - [tide.determine_tide_state] - Final Tide Score calculated: 6.20
+2025-07-22 23:32:46 - INFO - [tide.determine_tide_state] - Tide State for today is: RISK_ON
+2025-07-22 23:32:46 - INFO - [main.run_surfer] - --- Surfer Algorithm Run Complete ---
