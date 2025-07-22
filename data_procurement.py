@@ -1,64 +1,53 @@
+# data_procurement.py
 import pandas as pd
+import yfinance as yf
 from modules.mind import LOGGER
+import config
 import numpy as np
 
-def get_simulated_tide_data() -> dict:
-    """
-    This function simulates the data fetching process for all indicators
-    required by the Tide Module. It returns a dictionary with the
-    current state of each indicator.
-    """
-    LOGGER.info("Fetching simulated data for Tide module...")
-    
-    # In a real scenario, each of these would be a separate API call.
-    # We are simulating a 'RISK_ON' environment here for testing.
-    # Change these values to test different scenarios.
-    simulated_data = {
-        'Interest_Rate_Vector': "FALLING",  # FALLING is bullish (+1)
-        'Inflation_Vector': "STABLE",      # STABLE is neutral (0)
-        'GDP_Vector': "ACCELERATING",      # ACCELERATING is bullish (+1)
-        'VIX_Level': 17,                   # Below 20 is bullish (+1)
-        'Market_Trend': "ABOVE",           # Above 200DMA is bullish (+1)
-        'Market_Breadth': "UPTREND",       # UPTREND is bullish (+1)
-        'USD_Strength': "FALLING",         # FALLING is bullish (+1)
-        'Credit_Spreads': "NARROWING"      # NARROWING is bullish (+1)
-    }
-    
-    LOGGER.info(f"Simulated data obtained: {simulated_data}")
-    return simulated_data
-
-
-
-def get_simulated_swell_data(universe: list, days: int = 200) -> dict:
-    """
-    Generates a dictionary of fake historical data for a list of ETF symbols.
-    We'll make some sectors clear winners and others clear losers for testing.
-    """
-    LOGGER.info(f"Generating {days} days of simulated historical data for {universe}...")
-    data_dict = {}
-    date_range = pd.to_datetime(pd.date_range(end=pd.Timestamp.now(), periods=days))
-
-    for symbol in universe:
-        # Create a base trend
-        if symbol in ['XLK', 'XLY']: # Make Tech and Discretionary strong
-            trend = np.linspace(100, 150, days)
-        elif symbol in ['XLU', 'XLP']: # Make Utilities and Staples weak
-            trend = np.linspace(100, 90, days)
-        else: # Others are neutral
-            trend = np.linspace(100, 105, days)
+def get_historical_data(symbols: list, days: int):
+    LOGGER.info(f"Fetching FREE historical data for {symbols} via yfinance...")
+    try:
+        # yfinance fetches data differently, so we adjust the period
+        period = f"{days}d"
+        # Download data for all symbols at once
+        data = yf.download(symbols, period=period, progress=False)
         
-        # Add some noise
-        noise = np.random.normal(0, 2, days)
-        close_price = trend + noise
+        # If fetching a single symbol, the structure is simpler
+        if len(symbols) == 1:
+            return {symbols[0]: data}
+            
+        # For multiple symbols, we need to split the multi-level DataFrame
+        data_dict = {symbol: data.xs(symbol, level=1, axis=1) for symbol in symbols}
+        return data_dict
+    except Exception as e:
+        LOGGER.error(f"Failed to fetch yfinance data: {e}. Critical error.")
+        return {}
 
-        # Create a DataFrame
-        df = pd.DataFrame(index=date_range)
-        df['close'] = close_price
-        # You can add fake 'open', 'high', 'low', 'volume' if needed for other indicators
-        
-        data_dict[symbol] = df
-
-    return data_dict
-
-# You will add real data fetching functions here later
-# e.g., get_live_tide_data()
+# --- The Tide module's data fetcher can now be simplified ---
+def get_live_tide_data():
+    LOGGER.info("Fetching data for Tide module...")
+    live_data = {}
+    
+    proxies = ['SPY'] 
+    market_data = get_historical_data(proxies, 250)
+    
+    spy_df = market_data.get('SPY')
+    if spy_df is not None and not spy_df.empty and len(spy_df) >= 200:
+        spy_price = spy_df['Close'].iloc[-1]
+        spy_200ma = spy_df['Close'].rolling(window=200).mean().iloc[-1]
+        live_data['Market_Trend'] = "ABOVE" if spy_price > spy_200ma else "BELOW"
+    else:
+        live_data['Market_Trend'] = "NEUTRAL"
+    
+    # Set other proxies to neutral as they are harder to get reliably for free
+    live_data['VIX_Level'] = 25 # Placeholder
+    live_data['Credit_Spreads'] = "STABLE"
+    live_data['Market_Breadth'] = "NEUTRAL"
+    live_data['USD_Strength'] = "STABLE"
+    live_data['Interest_Rate_Vector'] = "STABLE"
+    live_data['Inflation_Vector'] = "STABLE"
+    live_data['GDP_Vector'] = "STABLE"
+    
+    LOGGER.info(f"Live data obtained: {live_data}")
+    return live_data

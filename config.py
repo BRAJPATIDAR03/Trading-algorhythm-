@@ -1,8 +1,11 @@
-# --- API Keys & Endpoints (Replace with your actual keys later) ---
+# config.py
+
+# --- API Keys & Endpoints ---
+# IMPORTANT: Make sure these keys are correct and have the necessary permissions.
 ALPACA_API_KEY = 'PK5DGDYI3USJT5573VNR'
 ALPACA_SECRET_KEY = 'l49Q5thKGHI8D5F27Feg4yZeJYeXjklG9OeoR4hy'
-ALPACA_BASE_URL = 'https://app.alpaca.markets/' # Use paper trading endpoint for development
-FRED_API_KEY = 'e9e3d30f7eff81b9aeab42807c86728a'
+ALPACA_BASE_URL = 'https://paper-api.alpaca.markets'
+FRED_API_KEY = '2f914084f2b27a61035bc279ba069e59'
 
 # --- Module 1: The Tide Parameters ---
 TIDE_SCORE_THRESHOLDS = {
@@ -36,11 +39,5 @@ MOMENTUM_SCORE_WEIGHTS = {
 
 # --- Module 3: The Wave Parameters ---
 WAVE_RISK_PER_TRADE = 0.01 # Risk 1% of total capital per trade
-WAVE_ATR_PERIOD = 14
-WAVE_ATR_MULTIPLIER = 2.0 # For the trailing stop loss
-WAVE_RSI_PERIOD = 14
-WAVE_RSI_THRESHOLDS = {
-    'LONG': 50,
-    'SHORT': 50
-}
 WAVE_BBANDS_PERIOD = 20
+WAVE_EMA_PERIOD = 10
